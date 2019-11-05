@@ -307,10 +307,10 @@ func (op FeatureOperator) installPrometheusOperator(
 		chartValues.NodeExporter = valuesManager.generateNodeExporterChartValues(spec.Exporters.NodeExporter)
 	}
 
-	valuesBytes, err := json.Marshal(chartValues)
+	var operatorConfigValues = op.config.Charts.Operator.Values
+	valuesBytes, err := mergeOperatorValuesWithConfig(*chartValues, operatorConfigValues)
 	if err != nil {
-		logger.Debug("failed to marshal chartValues")
-		return errors.WrapIf(err, "failed to decode chartValues")
+		return errors.WrapIf(err, "failed to merge operator values with config")
 	}
 
 	return op.helmService.ApplyDeployment(
@@ -322,6 +322,21 @@ func (op FeatureOperator) installPrometheusOperator(
 		valuesBytes,
 		op.config.Charts.Operator.Version,
 	)
+}
+
+func mergeOperatorValuesWithConfig(chartValues prometheusOperatorValues, configValues map[string]interface{}) ([]byte, error) {
+	valuesBytes, err := json.Marshal(chartValues)
+	if err != nil {
+		return nil, errors.WrapIf(err, "failed to decode chartValues")
+	}
+
+	var out map[string]interface{}
+	if err := json.Unmarshal(valuesBytes, &out); err != nil {
+		return nil, errors.WrapIf(err, "failed to unmarshal operator values")
+	}
+
+	result, err := merge(configValues, out)
+	return json.Marshal(result)
 }
 
 func (op FeatureOperator) generateGrafanaSecret(
