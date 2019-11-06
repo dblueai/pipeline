@@ -127,15 +127,11 @@ func (a *CreateVpcActivity) Execute(ctx context.Context, input CreateVpcActivity
 	createStackInput := &cloudformation.CreateStackInput{
 		ClientRequestToken: aws.String(input.AWSClientRequestToken),
 		DisableRollback:    aws.Bool(true),
-		Capabilities: []*string{
-			aws.String(cloudformation.CapabilityCapabilityIam),
-			aws.String(cloudformation.CapabilityCapabilityNamedIam),
-		},
-		StackName:        aws.String(input.StackName),
-		Parameters:       stackParams,
-		Tags:             getVPCStackTags(input.ClusterName),
-		TemplateBody:     aws.String(input.CloudFormationTemplate),
-		TimeoutInMinutes: aws.Int64(10),
+		StackName:          aws.String(input.StackName),
+		Parameters:         stackParams,
+		Tags:               getVPCStackTags(input.ClusterName),
+		TemplateBody:       aws.String(input.CloudFormationTemplate),
+		TimeoutInMinutes:   aws.Int64(10),
 	}
 	_, err = cloudformationClient.CreateStack(createStackInput)
 	if err != nil {
@@ -149,7 +145,7 @@ func (a *CreateVpcActivity) Execute(ctx context.Context, input CreateVpcActivity
 	describeStacksInput := &cloudformation.DescribeStacksInput{StackName: aws.String(input.StackName)}
 	err = cloudformationClient.WaitUntilStackCreateComplete(describeStacksInput)
 	if err != nil {
-		return nil, pkgCloudformation.NewAwsStackFailure(err, input.StackName, cloudformationClient)
+		return nil, pkgCloudformation.NewAwsStackFailure(err, input.StackName, input.AWSClientRequestToken, cloudformationClient)
 	}
 
 	describeStacksOutput, err := cloudformationClient.DescribeStacks(describeStacksInput)

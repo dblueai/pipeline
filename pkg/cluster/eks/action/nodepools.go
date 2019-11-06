@@ -212,6 +212,8 @@ func (a *CreateUpdateNodePoolStackAction) createUpdateNodePool(nodePool *model.A
 	tags := getNodePoolStackTags(a.context.ClusterName)
 	var stackParams []*cloudformation.Parameter
 
+	clientRequestToken := uuid.Must(uuid.NewV4()).String()
+
 	// create stack
 	if a.isCreate {
 		// do not update node labels via kubelet boostrap params as that induces node reboot or replacement
@@ -303,7 +305,7 @@ func (a *CreateUpdateNodePoolStackAction) createUpdateNodePool(nodePool *model.A
 		}
 
 		createStackInput := &cloudformation.CreateStackInput{
-			ClientRequestToken: aws.String(uuid.Must(uuid.NewV4()).String()),
+			ClientRequestToken: aws.String(clientRequestToken),
 			DisableRollback:    aws.Bool(true),
 			StackName:          aws.String(stackName),
 			Capabilities:       []*string{aws.String(cloudformation.CapabilityCapabilityIam)},
@@ -393,7 +395,7 @@ func (a *CreateUpdateNodePoolStackAction) createUpdateNodePool(nodePool *model.A
 
 		// we don't reuse the creation time template, since it may have changed
 		updateStackInput := &cloudformation.UpdateStackInput{
-			ClientRequestToken: aws.String(uuid.Must(uuid.NewV4()).String()),
+			ClientRequestToken: aws.String(clientRequestToken),
 			StackName:          aws.String(stackName),
 			Capabilities:       []*string{aws.String(cloudformation.CapabilityCapabilityIam)},
 			Parameters:         stackParams,
@@ -436,7 +438,7 @@ func (a *CreateUpdateNodePoolStackAction) createUpdateNodePool(nodePool *model.A
 		err = errors.WrapIff(cloudformationSrv.WaitUntilStackUpdateComplete(describeStacksInput), "waiting for %q CF stack update operation to complete failed", stackName)
 	}
 
-	err = pkgCloudformation.NewAwsStackFailure(err, stackName, cloudformationSrv)
+	err = pkgCloudformation.NewAwsStackFailure(err, stackName, clientRequestToken, cloudformationSrv)
 	if err != nil {
 		// cancelling the wait for ASG fulfillment go routine as an error occurred during waiting for the completion of the cloud formation stack operation
 		cancelASGWait()
