@@ -29,4 +29,6 @@ func registerEKSWorkflows() {
 
 	createVPCActivity := eksworkflow.NewCreateVPCActivity(awsSessionFactory)
 	activity.RegisterWithOptions(createVPCActivity.Execute, activity.RegisterOptions{Name: eksworkflow.CreateVpcActivityName})
+	createIamRolesActivity := eksworkflow.NewCreateIamRolesActivity(awsSessionFactory)
+	activity.RegisterWithOptions(createIamRolesActivity.Execute, activity.RegisterOptions{Name: eksworkflow.CreateIamRolesActivityName})
 }
