@@ -35,12 +35,7 @@ type CreateVpcActivity struct {
 // CreateVpcActivityInput holds data needed for setting up
 // VPC for EKS cluster
 type CreateVpcActivityInput struct {
-	OrganizationID uint
-	SecretID       string
-
-	Region string
-
-	ClusterName string
+	EKSActivityInput
 
 	// the ID of the VPC to be used instead of creating a new one
 	VpcID string
@@ -56,11 +51,6 @@ type CreateVpcActivityInput struct {
 
 	// name of the cloud formation template stack
 	StackName string
-
-	// 64 chars length unique unique identifier that identifies the create CloudFormation
-	// stack request sent to AWS for provisioning the VPC. In case of retrying the activity this id should stay the same
-	// such as AWS knows that this is not a new create stack request but the one sent before.
-	AWSClientRequestToken string
 }
 
 // CreateVpcActivityOutput holds the output data of the CreateVpcActivity

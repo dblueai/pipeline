@@ -36,6 +36,10 @@ type CreateClusterWorkflowInput struct {
 	OrganizationName string
 	SecretID         string
 	Region           string
+	// 64 chars length unique unique identifier that consists the base of the create CloudFormation request
+	// this is provided to workflow to assure idempotency in case of a workflow rerun, to submit unique id's for
+	// each stack request we add the stack name to this token.
+	AWSClientRequestToken string
 
 	VpcCidr      string
 	VpcID        string
@@ -64,6 +68,7 @@ func CreateClusterWorkflow(ctx workflow.Context, input CreateClusterWorkflowInpu
 		VpcID:                     input.VpcID,
 		RouteTableID:              input.RouteTableID,
 		VpcCloudFormationTemplate: input.VpcCloudFormationTemplate,
+		AWSClientRequestToken:     input.AWSClientRequestToken,
 	}
 
 	err := workflow.ExecuteChildWorkflow(ctx, CreateInfraWorkflowName, infraInput).Get(ctx, nil)
@@ -108,5 +113,4 @@ func CreateClusterWorkflow(ctx workflow.Context, input CreateClusterWorkflowInpu
 
 	return nil
 
-	return nil
 }

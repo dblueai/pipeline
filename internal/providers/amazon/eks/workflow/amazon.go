@@ -33,3 +33,16 @@ func getStackTags(clusterName, stackType string) []*cloudformation.Tag {
 func generateStackNameForCluster(clusterName string) string {
 	return "pipeline-eks-" + clusterName
 }
+
+// EKSActivityInput holds common input data for all activities
+type EKSActivityInput struct {
+	OrganizationID uint
+	SecretID       string
+
+	Region string
+
+	ClusterName string
+
+	// 64 chars length unique unique identifier that identifies the create CloudFormation
+	AWSClientRequestToken string
+}

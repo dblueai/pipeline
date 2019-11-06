@@ -35,15 +35,7 @@ type CreateIamRolesActivity struct {
 
 // CreateIamRolesActivityInput holds data needed for setting up IAM roles
 type CreateIamRolesActivityInput struct {
-	OrganizationID uint
-	SecretID       string
-
-	Region string
-
-	ClusterName string
-
-	// 64 chars length unique unique identifier that identifies the create CloudFormation
-	AWSClientRequestToken string
+	EKSActivityInput
 
 	DefaultUser        bool
 	ClusterRoleID      string
